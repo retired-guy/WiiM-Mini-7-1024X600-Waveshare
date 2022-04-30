@@ -6,9 +6,7 @@ Display for WiiM Mini using Waveshare 7" 1024x600 IPS display and Raspberry Pi Z
 Installation notes
 
 NOTE!!!!!!!
-
-Was unable to get the waveshare to work on Bullseye.  These instructions are strictly for Raspberry Pi OS-Lite Buster
-
+Was unable to get the waveshare to work on Bullseye.  These instructions are strictly for Raspberry Pi OS-Lite Buster on a Raspberry Pi Zero (original)
 !!!!!!!!!!!
 
 Waveshare Wiki https://www.waveshare.com/wiki/7inch_LCD_for_Pi
@@ -85,15 +83,15 @@ sudo python3 -m pip install async-upnp-client
 
 sudo python3 -m pip install xmltodict
 
-Find this near the bottom of wiim.py, and edit as appropriate to point to the IP address of your WiiM Mini
+Find this near the bottom of wiim.py, and edit as appropriate to point to the IP address of your WiiM Mini.  I used the "UPnP Tool" app on Android or iOS to find the ip and port for the WiiM's description.xml.  Make sure your WiiM's IP address is reserved in your router
 
-   ####  NOTICE!!!! #####################################
-   
-   ####  Your WiiM Mini's IP and port go here
-   
-   device = "http://192.168.68.112:49152/description.xml"
-    
-   ####             #####################################
+'####  NOTICE!!!! #####################################
+
+'####  Your WiiM Mini's IP and port go here
+
+'device = "http://192.168.68.112:49152/description.xml"
+
+'####             #####################################
 
 sudo apt install fonts-dejavu
 
