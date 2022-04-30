@@ -19,8 +19,6 @@ Waveshare Wiki https://www.waveshare.com/wiki/7inch_LCD_for_Pi
 
 edit /boot/config.txt on the SD card per the Wiki for Buster
 
-download Waveshare driver and copy to /boot/overlays directory on the SD card
-
 For WiFi network login, set up wpa_supplicant.conf, and save to the /boot direcory on the SD card
 
 https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking31
