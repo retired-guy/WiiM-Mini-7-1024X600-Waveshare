@@ -6,7 +6,9 @@ Display for WiiM Mini using Waveshare 7" 1024x600 IPS display and Raspberry Pi Z
 Installation notes
 
 NOTE!!!!!!!
+
 Was unable to get the waveshare to work on Bullseye.  These instructions are strictly for Raspberry Pi OS-Lite Buster on a Raspberry Pi Zero (original)
+
 !!!!!!!!!!!
 
 Waveshare Wiki https://www.waveshare.com/wiki/7inch_LCD_for_Pi
