@@ -11,9 +11,13 @@ Was unable to get the waveshare to work on Bullseye.  These instructions are str
 
 !!!!!!!!!!!
 
+Create a micro-SD card with the Raspberry Pi OS-Lite Buster distro using the instructions on the RPi site
+
+With the SD card still on your computer:
+
 Waveshare Wiki https://www.waveshare.com/wiki/7inch_LCD_for_Pi
 
-edit config.txt per the Wiki for Buster
+edit /boot/config.txt on the SD card per the Wiki for Buster
 
 download Waveshare driver and copy to /boot/overlays directory on the SD card
 
