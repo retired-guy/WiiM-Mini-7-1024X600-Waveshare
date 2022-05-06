@@ -26,6 +26,7 @@ from async_upnp_client.profiles.dlna import dlna_handle_notify_last_change
 from async_upnp_client.search import async_search as async_ssdp_search
 from async_upnp_client.ssdp import SSDP_IP_V4, SSDP_IP_V6, SSDP_PORT, SSDP_ST_ALL
 from async_upnp_client.utils import get_local_ip
+from async_upnp_client.utils import CaseInsensitiveDict 
 
 from PIL import Image,ImageFont,ImageDraw,ImageEnhance
 
@@ -112,7 +113,7 @@ def displaydatetime(large):
     draw.rounded_rectangle((0,0,w,h),fill=dcolor,radius=7)
     draw.text((10,0), dt, tcolor,font=fonts[1])
 
-    buf = "%s / %s" % (reltime[3:],duration[3:])
+    buf = "%s/%s" % (reltime[3:],duration[3:])
     draw.text((320,0), buf, tcolor,font=fonts[1])
     blit(img,(550,550))
 
@@ -147,6 +148,8 @@ def displaymeta(data):
 
   try:
     depth = int(data['song:format_s'])
+    if depth > 24:
+      depth = 24
   except:
     depth = 0
 
@@ -201,11 +204,13 @@ def displaymeta(data):
     if quality >0:
       if quality == 1:
         buf = " HIGH"
-      elif quality >1:
+      elif quality == 2:
+        buf = "  HiFi"
+      else:
         buf = "Hi-Res"
 
       draw.rounded_rectangle((800,4,878,45),outline=tcolor,width=1,radius=7)
-      draw.text((805,0),buf,tcolor,font=fonts[1])
+      draw.text((805,2),buf,tcolor,font=fonts[1])
   except:
     pass
 
@@ -364,16 +369,54 @@ async def pollingloop(description_url: str, service_names: Any) -> None:
 
           await asyncio.sleep(1)
 
+
+async def search() -> None:
+    """Discover WiiM device"""
+
+    global wiim_description_url
+
+    timeout = 5
+    ### Search for service type unique to WiiM  
+    service_type = "urn:schemas-wiimu-com:service:PlayQueue:1" 
+    wiim_description_url = ""
+
+    source, target = (
+            "0.0.0.0",
+            0,
+        ), (SSDP_IP_V4, SSDP_PORT)
+
+
+    async def on_response(headers: CaseInsensitiveDict) -> None:
+        global wiim_description_url
+        for key, value in headers.items():
+          if key == "LOCATION":
+            wiim_description_url = value
+            break
+
+    await async_ssdp_search(
+        service_type=service_type,
+        source=source,
+        target=target,
+        timeout=timeout,
+        async_callback=on_response,
+    )
+
+    return(wiim_description_url)
+
 async def async_main() -> None:
     """Async main."""
 
-    ####  NOTICE!!!! #####################################
-    ####  Your WiiM Mini's IP and port go here
-    device = "http://192.168.68.112:49152/description.xml"
-    ####             #####################################
     service = ["AVTransport"]
 
-    await pollingloop(device, service)
+    ### SSDP search for the WiiM 
+    wiim_description_url = await search()
+    print(wiim_description_url)
+
+    if wiim_description_url == "":
+      print("Can't find WiiM Mini!")
+      sys.exit(1)
+
+    await pollingloop(wiim_description_url, service)
 
 def main() -> None:
     """Set up async loop and run the main program."""
