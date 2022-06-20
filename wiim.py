@@ -142,6 +142,12 @@ def displaymeta(data):
     quality = 0
 
   try:
+    actualQuality = data['song:actualQuality']
+    mediatype = "FLAC"
+  except:
+    actualQuality = ""
+
+  try:
     rate = int(data['song:rate_hz'])/1000.0
   except:
     rate = 0
@@ -170,6 +176,28 @@ def displaymeta(data):
     except:
       pass
 
+  try:
+    mediatype = data['upnp:mediatype'].upper()
+  except:
+    if quality > 1 or len(actualQuality) > 0 :
+      mediatype = "FLAC"
+    else:
+      mediatype = ""
+
+  try:
+    res = data['res']['#text']
+    index = res.find('bitrate')
+    if index > 0:
+      bitrate = res[index+8:] + " kbps"
+    else:
+      try:
+        br= int(data['song:bitrate']) / 1000.0
+        bitrate = "%d kbps" % br
+      except:
+        bitrate = ""
+  except:
+    bitrate = ""
+
   draw = ImageDraw.Draw(img)
   draw.rounded_rectangle((3,5,469,495), outline=tcolor,width=1,radius=7)
 
@@ -186,7 +214,7 @@ def displaymeta(data):
     pass
 
   if rate >0 and depth >0:
-    buf = "%.d bits / %.1f kHz" % (depth,rate)
+    buf = "%.d bits / %.1f kHz  %s" % (depth,rate,bitrate)
     draw.text((20,450), buf, tcolor, font=fonts[1])
 
   blit(img,(550,50))
@@ -201,16 +229,23 @@ def displaymeta(data):
     if currentTrack >0 and numTracks >0:
       draw.text((920,0),buf,tcolor,font=fonts[0])
 
-    if quality >0:
+    if quality > 0 or len(actualQuality) > 0:
       if quality == 1:
-        buf = " HIGH"
+        buf = "HIGH"
       elif quality == 2:
-        buf = "  HiFi"
+        buf = "HiFi"
       else:
         buf = "Hi-Res"
 
-      draw.rounded_rectangle((800,4,878,45),outline=tcolor,width=1,radius=7)
-      draw.text((805,2),buf,tcolor,font=fonts[1])
+      if quality==0 and len(actualQuality) > 0:
+        buf = actualQuality
+
+      font = fonts[1]
+
+      w,h = font.getsize(buf) 
+
+      draw.rounded_rectangle((800,4,826+w,44),outline=tcolor,width=1,radius=7)
+      draw.text((812,2),buf,tcolor,font=font)
   except:
     pass
 
@@ -225,15 +260,18 @@ def getcoverart(url):
 
     img = Image.new('RGBA',size=(550,550),color="black")
 
-    img2 = Image.open(requests.get(url, stream=True).raw)
+    try:
+      img2 = Image.open(requests.get(url, stream=True).raw)
 
-    img2 = img2.resize((545,545))
-    img2 = img2.convert('RGBA')
+      img2 = img2.resize((545,545))
+      img2 = img2.convert('RGBA')
 
-    ##### The Waveshare screen is quite bright, so let's dim the image a bit
-    enhancer = ImageEnhance.Brightness(img2)
-    img2 = enhancer.enhance(0.5)
-    img.paste(img2,(0,5))
+      ##### The Waveshare screen is quite bright, so let's dim the image a bit
+      enhancer = ImageEnhance.Brightness(img2)
+      img2 = enhancer.enhance(0.4)
+      img.paste(img2,(0,5))
+    except:
+      pass
 
     blit(img,(0,50))
   except Exception as e:
@@ -306,7 +344,7 @@ async def pollingloop(description_url: str, service_names: Any) -> None:
           ##### Get the current transport state 
           result = await info_action.async_call(InstanceID=0,Channel="Master")
           state = result["CurrentTransportState"]
-          if state in ["STOPPED","PAUSED","PAUSED_PLAYBACK","TRANSITIONING"]:
+          if state in ["STOPPED","PAUSED","PAUSED_PLAYBACK","TRANSITIONING","NO_MEDIA_PRESENT"]:
             playing = False
             newTrack = True
           else:
@@ -342,9 +380,11 @@ async def pollingloop(description_url: str, service_names: Any) -> None:
               meta = result["TrackMetaData"]
 
               ### Convert the grubby XML to JSON, because XML stinks!
-              items = xmltodict.parse(meta)["DIDL-Lite"]["item"]
+              ### First fix incorrect & in XML
+              xml = meta.replace("& ","&#38; ")
+              items = xmltodict.parse(xml)["DIDL-Lite"]["item"]
 
-              if newTrack == True:
+              if newTrack == True or numTracks == 0:
                 #print(json.dumps(items,indent=4))
                 newTrack = False
                 try:
