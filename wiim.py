@@ -45,6 +45,7 @@ fonts.append( ImageFont.truetype('/usr/share/fonts/truetype/oswald/Oswald-Bold.t
 fonts.append( ImageFont.truetype('/usr/share/fonts/truetype/oswald/Oswald-Light.ttf', 30) )
 fonts.append( ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 30) )
 fonts.append( ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 144) )
+fonts.append( ImageFont.truetype('/usr/share/fonts/truetype/oswald/Oswald-Light.ttf', 36) )
 
 ## Red and Blue color channels are reversed from normal RGB on pi framebuffer
 def swap_redblue(img):
@@ -127,12 +128,12 @@ def displaymeta(data):
 
   img = Image.new('RGBA',size=(474,500),color='#000000')
 
-  tw1 = textwrap.TextWrapper(width=40)
-  tw2 = textwrap.TextWrapper(width=40)
+  tw1 = textwrap.TextWrapper(width=33)
+  tw2 = textwrap.TextWrapper(width=33)
   s = "\n"
 
   try:
-    artist = data['upnp:artist']
+    artist = data['upnp:artist'][:132]
   except:
     artist = ""
 
@@ -168,13 +169,13 @@ def displaymeta(data):
     title = ""
 
   try:
-    album = data['upnp:album']
+    album = data['upnp:album'][:132]
   except:
     album = ""
 
   if album == "":
     try:
-      album = data['dc:subtitle']
+      album = data['dc:subtitle'][:132]
     except:
       pass
 
@@ -205,19 +206,19 @@ def displaymeta(data):
 
   try:
     artist = s.join(tw2.wrap(artist)[:6])
-    draw.text((20,10), artist, tcolor,font=fonts[1])
+    draw.text((20,10), artist, tcolor,font=fonts[4])
   except:
     pass
 
   try:
     album = s.join(tw2.wrap(album)[:6])
-    draw.text((20,210), album, tcolor,font=fonts[1])
+    draw.text((20,210), album, tcolor,font=fonts[4])
   except:
     pass
 
   if rate >0 and depth >0:
     buf = "%.d bits / %.1f kHz  %s" % (depth,rate,bitrate)
-    draw.text((20,450), buf, tcolor, font=fonts[1])
+    draw.text((20,450), buf, tcolor, font=fonts[4])
 
   blit(img,(550,50))
 
