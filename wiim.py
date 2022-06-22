@@ -154,6 +154,8 @@ def displaymeta(data):
 
   try:
     depth = int(data['song:format_s'])
+    if actualQuality == "HD":
+      depth = 16
     if depth > 24:
       depth = 24
   except:
@@ -353,10 +355,10 @@ async def pollingloop(description_url: str, service_names: Any) -> None:
 
           if playing == False:
             #### Make sure we're really stopped
-            if state in ["PAUSED","PAUSED_PLAYBACK"]:
+            #if state in ["PAUSED","PAUSED_PLAYBACK"]:
               #### Wiim Mini won't turn off optical output LED with Pause, so send hard Stop
               ####   to turn it off so that RME DAC will switch to USB input
-              result = await stop_action.async_call(InstanceID=0,Channel="Master")
+              #result = await stop_action.async_call(InstanceID=0,Channel="Master")
 
             displaydatetime(True)
           else:
